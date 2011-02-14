@@ -22,6 +22,7 @@ module CloudSeed
     end
 
     def is_compressable?(mime)
+      return false unless mime
       return mime.start_with?('text/') ||
         COMPRESSABLE.any?{|c| mime.start_with?(c) }
     end
