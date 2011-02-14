@@ -29,6 +29,26 @@ class TestMiddleware < CloudSeed::TestCase
     assert_equal "Accept-Encoding", last_response.headers['Vary']
   end
 
+  CloudSeed::Middleware::CDN_ASSETS.each do |m|
+    test "200 for CDN request of #{m}" do
+      header "User-Agent", "Amazon CloudFront"
+      get "/#{m}"
+
+      assert_equal 200, last_response.status
+      
+      header "User-Agent", nil
+    end
+  end
+
+  test "404 non-CDN content for CloudFront user agent" do
+    header "User-Agent", "Amazon CloudFront"
+    get "/text/html"
+
+    assert_equal 404, last_response.status
+    
+    header "User-Agent", nil
+  end
+
   ["javascript", "json", "atom+xml", "xml"].each do |f|
     test "vary for application/#{f}" do
       get "/application/#{f}"

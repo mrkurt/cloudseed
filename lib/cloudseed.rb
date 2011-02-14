@@ -1,5 +1,6 @@
 module CloudSeed
   class Middleware
+    CDN_ASSETS = ['text/css', 'application/javascript', 'text/javascript', 'image/', 'application/pdf', 'audio/', 'video/']
     COMPRESSABLE = ["javascript", "json", "atom+xml", "xml", "pdf"].map do |f|
         "application/#{f}"
       end
@@ -13,12 +14,27 @@ module CloudSeed
       munge_version(env)
 
       status, headers, body = app.call(env)
+
+      mime = headers['Content-Type']
       
-      if is_compressable?(headers['Content-Type'])
+      if status == 200 && is_compressable?(mime)
         headers['Vary'] = 'Accept-Encoding'
       end
 
-      [status, headers, body]
+      if !is_cloudfront_request?(env) || status == 404 || is_cdn_asset?(mime)
+        [status, headers, body]
+      else
+        [404, {}, ['Not found']]
+      end
+    end
+
+    def is_cloudfront_request?(env)
+      env['HTTP_USER_AGENT'] == 'Amazon CloudFront'
+    end
+
+    def is_cdn_asset?(mime)
+      return true unless mime
+      CDN_ASSETS.any?{|c| mime.start_with?(c) }
     end
 
     def is_compressable?(mime)
