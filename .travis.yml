@@ -1,1 +1,1 @@
-script: "ruby -Ilib -Itest test/test_middleware.rb"
+script: "ruby -Irubygems -Ilib -Itest test/test_middleware.rb"
