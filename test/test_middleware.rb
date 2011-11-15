@@ -35,6 +35,7 @@ class TestMiddleware < CloudSeed::TestCase
       get "/#{m}"
 
       assert_equal 200, last_response.status
+      assert_not_nil last_response.headers['Expires']
       
       header "User-Agent", nil
     end

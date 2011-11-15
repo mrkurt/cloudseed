@@ -21,6 +21,10 @@ module CloudSeed
         headers['Vary'] = 'Accept-Encoding'
       end
 
+      if is_cloudfront_request?(env) && !headers.has_key?('Expires')
+        headers['Expires'] = (Time.now + (365 * 24 * 60 * 60)).utc.rfc2822
+      end
+
       if !is_cloudfront_request?(env) || status == 404 || is_cdn_asset?(mime)
         [status, headers, body]
       else
